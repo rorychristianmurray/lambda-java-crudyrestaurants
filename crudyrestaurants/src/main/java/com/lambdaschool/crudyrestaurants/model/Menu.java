@@ -7,7 +7,7 @@ import javax.persistence.*;
 public class Menu
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.Auto)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long menuid;
 
     @Column(nullable = false)
