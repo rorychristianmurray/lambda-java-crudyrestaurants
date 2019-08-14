@@ -5,11 +5,13 @@ import com.lambdaschool.crudyrestaurants.model.Restaurant;
 import com.lambdaschool.crudyrestaurants.repos.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Transactional
 @Service(value = "restaurantService")
 public class RestaurantServiceImpl implements RestaurantService
 {
@@ -47,6 +49,7 @@ public class RestaurantServiceImpl implements RestaurantService
         return restaurant;
     }
 
+    @Transactional
     @Override
     public void delete(long id)
     {
@@ -60,6 +63,8 @@ public class RestaurantServiceImpl implements RestaurantService
         }
     }
 
+
+    @Transactional // tell Spring we are changing data and handles everything as single trx
     @Override
     public Restaurant save(Restaurant restaurant)
     {
@@ -80,9 +85,46 @@ public class RestaurantServiceImpl implements RestaurantService
         return restrepos.save(newRestaurant);
     }
 
+    @Transactional
     @Override
     public Restaurant update(Restaurant restaurant, long id)
     {
-        return null;
+        Restaurant currentRestaurant = restrepos.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(Long.toString(id)));
+
+        if (restaurant.getName() != null)
+        {
+            currentRestaurant.setName(restaurant.getName());
+        }
+
+        if (restaurant.getAddress() != null)
+        {
+            currentRestaurant.setAddress(restaurant.getAddress());
+        }
+
+        if (restaurant.getCity() != null)
+        {
+            currentRestaurant.setCity(restaurant.getCity());
+        }
+
+        if (restaurant.getState() != null)
+        {
+            currentRestaurant.setState(restaurant.getState());
+        }
+
+        if (restaurant.getTelephone() != null)
+        {
+            currentRestaurant.setTelephone(restaurant.getTelephone());
+        }
+
+        if (restaurant.getMenus().size() > 0)
+        {
+            for (Menu m : restaurant.getMenus())
+            {
+                currentRestaurant.getMenus().add(new Menu(m.getDish(), m.getPrice(), currentRestaurant));
+            }
+        }
+
+        return restrepos.save(currentRestaurant);
     }
 }
