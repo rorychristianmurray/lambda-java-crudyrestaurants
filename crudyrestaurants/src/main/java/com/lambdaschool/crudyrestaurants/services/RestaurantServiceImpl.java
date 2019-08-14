@@ -1,7 +1,8 @@
 package com.lambdaschool.crudyrestaurants.services;
 
+import com.lambdaschool.crudyrestaurants.model.Menu;
 import com.lambdaschool.crudyrestaurants.model.Restaurant;
-import com.lambdaschool.crudyrestaurants.repos.RestaurantRespository;
+import com.lambdaschool.crudyrestaurants.repos.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +14,7 @@ import java.util.List;
 public class RestaurantServiceImpl implements RestaurantService
 {
     @Autowired
-    private RestaurantRespository restrepos;
+    private RestaurantRepository restrepos;
 
     @Override
     public List<Restaurant> findAll()
@@ -36,19 +37,47 @@ public class RestaurantServiceImpl implements RestaurantService
     @Override
     public Restaurant findRestaurantByName(String name)
     {
-        return null;
+        Restaurant restaurant = restrepos.findByName(name);
+
+        if (restaurant == null)
+        {
+            throw new EntityNotFoundException("Restaurant " + name + " not found!");
+        }
+
+        return restaurant;
     }
 
     @Override
     public void delete(long id)
     {
-
+        if (restrepos.findById(id).isPresent())
+        {
+            restrepos.deleteById(id);
+        }
+        else
+        {
+            throw new EntityNotFoundException(Long.toString(id));
+        }
     }
 
     @Override
     public Restaurant save(Restaurant restaurant)
     {
-        return null;
+        Restaurant newRestaurant = new Restaurant();
+
+        newRestaurant.setName(restaurant.getName());
+        newRestaurant.setAddress(restaurant.getAddress());
+        newRestaurant.setCity(restaurant.getCity());
+        newRestaurant.setState(restaurant.getState());
+        newRestaurant.setTelephone(restaurant.getTelephone());
+
+       // wrong - saves pointer to memory location newRestaurant.setMenus(restaurant.getMenus());
+
+        for (Menu m : restaurant.getMenus())
+        {
+            newRestaurant.getMenus().add(new Menu(m.getDish(), m.getPrice(), newRestaurant));
+        }
+        return restrepos.save(newRestaurant);
     }
 
     @Override
